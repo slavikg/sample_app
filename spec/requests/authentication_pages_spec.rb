@@ -48,18 +48,30 @@ describe "Authentication" do
 		let(:user) { FactoryGirl.create(:user) }
 
 		describe "for non-signed-in users" do
-		  before do
-		    visit edit_user_path(user)
-		    fill_in "Email", with: user.email
-		    fill_in "Password", with: user.password
-		    click_button "Sign in"
-		  end
+			before do
+				visit edit_user_path(user)
+				fill_in "Email", with: user.email
+				fill_in "Password", with: user.password
+				click_button "Sign in"
+			end
 
-		  describe "after signing in" do
-		    it "should render the desired protected page" do
-		    	expect(page).to have_title('Edit user')
-		    end
-		  end
+			describe "after signing in" do
+				it "should render the desired protected page" do
+					expect(page).to have_title('Edit user')
+				end
+			end
+
+			describe "in the Microposts controller" do
+			  describe "submittimg to the create action" do
+			    before {post microposts_path}
+			    specify { expect(response).to redirect_to signin_path }
+			  end
+
+			  describe "submittimg to the destroy action" do
+			    before {delete micropost_path(FactoryGirl.create :micropost)}
+			    specify { expect(response).to redirect_to signin_path }
+			  end
+			end
 		end
 
 		describe "in the Users controller" do
@@ -77,9 +89,9 @@ describe "Authentication" do
 			end
 
 			describe "visiting the user index" do
-			  before {visit users_path}
+				before {visit users_path}
 
-			  it { should have_title('Sign in') }
+				it { should have_title('Sign in') }
 			end
 		end
 
@@ -103,15 +115,15 @@ describe "Authentication" do
 		end
 
 		describe "as non-admin user" do
-		  let(:user) { FactoryGirl.create :user }
-		  let(:non_admin) { FactoryGirl.create :user }
+			let(:user) { FactoryGirl.create :user }
+			let(:non_admin) { FactoryGirl.create :user }
 
-		  before {sign_in non_admin, no_capybara: true}
+			before {sign_in non_admin, no_capybara: true}
 
-		  describe "submitting a DELETE request to the Users#destroy action" do
-		    before {delete user_path(user)}
-		    specify { expect(response).to redirect_to(root_url) }
-		  end
+			describe "submitting a DELETE request to the Users#destroy action" do
+				before {delete user_path(user)}
+				specify { expect(response).to redirect_to(root_url) }
+			end
 		end
 	end
 end
